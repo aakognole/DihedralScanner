@@ -1,0 +1,36 @@
+#!/bin/bash
+
+cwd=`pwd`
+if [ -e setenv ]; then source setenv; else ./setenv.sh; source setenv; fi
+
+if [ ! ${1} ] || [ ! ${2} ] || [ ! ${3} ] || [ ! ${4} ] || [ ! ${5} ] || [ ! ${6} ]; then
+    echo "Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4> e.g. ./run c36 gln CB CG CD NE2"
+    exit
+fi
+
+mkdir -p output
+resid="${2}"
+a1="${3}"
+a2="${4}"
+a3="${5}"
+a4="${6}"
+mkdir -p output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+
+printf "\n>>> Generating coordinates..."
+
+$CHARMMDIR/charmm -i generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > generate_coordinates.out
+flag=`tail -n 6 generate_coordinates.out | head -n 1 | awk '{print $1}'`
+if [ $flag == "ABNORMAL" ]; then
+    printf " failed! Check generate_coordinates.out for errors! \n"
+    exit
+else
+    printf " success!\n"
+fi
+
+printf "\n>>> Generating psi4 inputs..."
+
+for i in $(seq 11 46); do
+    printf " ${i}..."
+    $PYTHONDIR/python get_psi4_input.py output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/d_${i}.pdb $a1 $a2 $a3 $a4 > output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/d_${i}.psi4.inp
+done
+printf " success!\n"

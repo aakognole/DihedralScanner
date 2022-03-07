@@ -1,0 +1,6 @@
+clean
+setenv
+toppar/toppar_c36
+toppar/toppar_drude
+output/*
+*out
