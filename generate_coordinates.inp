@@ -15,39 +15,78 @@ if @method eq drude then
     read coor card name @resid.drude.crd
 endif
 
-energy
-
 quick 1 @a1 1 @a2 1 @a3 1 @a4
 
-calc scan = ?PHI - 0
-set iter 11
+calc scan = ?PHI
+set iter 118
 
-open write card unit 11 name ./output/mm_@resid_dihe_@a1_@a2_@a3_@a4.txt
+label loop1
 
-label loop
-
-cons dihe 1 @a1 1 @a2 1 @a3 1 @a4 FORCE 9999.0 MIN @scan
+cons dihe 1 @a1 1 @a2 1 @a3 1 @a4 FORCE 99999.0 MIN @scan
 if @method eq drude then
     cons harm force 1000000.0 sele .not. type D* show end
-    cons harm force 1000000.0 sele type dum show end
     MINI SD nstep 200 tolgrd 0.00001
     MINI ABNR nstep 500 tolgrd 0.00001
     cons harm force 0.0 sele all end
 endif
-MINI CONJ nstep 100 nprint 20 inbfrq 1000 cutnb 999.
-MINI ABNR nstep 100 tolgrd 0.00001
+MINI SD nstep 500 nprint 20 inbfrq 1000 cutnb 999.
+MINI ABNR nstep 1000 tolgrd 0.00001
 cons cldh
 
 ener
 
 quick 1 @a1 1 @a2 1 @a3 1 @a4
 write title unit 11
-* @scan ?ENER
+* ?PHI ?ENER @iter
 
 write coor pdb name ./output/@resid_dihe_@a1_@a2_@a3_@a4/d_@iter.pdb
 
 incr iter by 1
 incr scan by 10.0
-if @iter .lt. 47 goto loop
+if @iter .lt. 137 goto loop1
+
+dele atom sele all end
+
+! Read topology and parameter files
+if @method eq c36 then
+    !stream toppar_c36.str
+    read psf card name @resid.c36.psf
+    read coor card name @resid.c36.crd
+endif
+if @method eq drude then
+    !stream toppar_drude.str
+    read psf card name @resid.drude.psf
+    read coor card name @resid.drude.crd
+endif
+
+quick 1 @a1 1 @a2 1 @a3 1 @a4
+
+calc scan = ?PHI - 10.0
+set iter 117
+
+label loop2
+
+cons dihe 1 @a1 1 @a2 1 @a3 1 @a4 FORCE 999.0 MIN @scan
+if @method eq drude then
+    cons harm force 1000000.0 sele .not. type D* show end
+    MINI SD nstep 200 tolgrd 0.00001
+    MINI ABNR nstep 500 tolgrd 0.00001
+    cons harm force 0.0 sele all end
+endif
+MINI SD nstep 500 nprint 20 inbfrq 1000 cutnb 999.
+MINI ABNR nstep 1000 tolgrd 0.00001
+cons cldh
+
+ener
+
+quick 1 @a1 1 @a2 1 @a3 1 @a4
+write title unit 11
+* ?PHI ?ENER @iter
+
+write coor pdb name ./output/@resid_dihe_@a1_@a2_@a3_@a4/d_@iter.pdb
+
+incr iter by -1
+incr scan by -10.0
+if @iter .gt. 100 goto loop2
 
 stop

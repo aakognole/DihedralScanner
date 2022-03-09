@@ -4,7 +4,9 @@ cwd=`pwd`
 if [ -e setenv ]; then source setenv; else ./setenv.sh; source setenv; fi
 
 if [ ! ${1} ] || [ ! ${2} ] || [ ! ${3} ] || [ ! ${4} ] || [ ! ${5} ] || [ ! ${6} ]; then
-    echo "Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4> e.g. ./run c36 gln CB CG CD NE2"
+    printf "\n>>> Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4>\n"
+    printf "\ne.g. ./run drude bglcna o5 c1 c2 c3\n"
+    printf "\nNeeds psf and crd files named: <resid>.<c36/drude>.psf & <resid>.<c36/drude>.crd\n\n"
     exit
 fi
 
@@ -25,12 +27,25 @@ if [ $flag == "ABNORMAL" ]; then
     exit
 else
     printf " success!\n"
+    sort -n fort.11 > output/mm_${resid}_dihe_${a1}_${a2}_${a3}_${a4}.txt
+    rm fort.11
+fi
+
+printf "\n>>> Removing high energy conformations..."
+$PYTHONDIR/python process_mme.py $resid $a1 $a2 $a3 $a4 > process_mme.out
+if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
+    printf " success!\n"
+else
+    printf " failed! Check process_mme.out for errors! \n"
+    exit
 fi
 
 printf "\n>>> Generating psi4 inputs..."
-
-for i in $(seq 11 46); do
-    printf " ${i}..."
-    $PYTHONDIR/python get_psi4_input.py output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/d_${i}.pdb $a1 $a2 $a3 $a4 > output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/d_${i}.psi4.inp
+cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+for i in *psi4.pdb; do
+    printf " ${i:2:4}..."
+    $PYTHONDIR/python ../../get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
 done
-printf " success!\n"
+printf " Done!\n\n"
+
+
