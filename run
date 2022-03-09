@@ -20,10 +20,10 @@ mkdir -p output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
 
 printf "\n>>> Generating coordinates..."
 
-$CHARMMDIR/charmm -i generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > generate_coordinates.out
-flag=`tail -n 6 generate_coordinates.out | head -n 1 | awk '{print $1}'`
+$CHARMMDIR/charmm -i 01_generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > 01_generate_coordinates.out
+flag=`tail -n 6 01_generate_coordinates.out | head -n 1 | awk '{print $1}'`
 if [ $flag == "ABNORMAL" ]; then
-    printf " failed! Check generate_coordinates.out for errors! \n"
+    printf " failed! Check 01_generate_coordinates.out for errors! \n"
     exit
 else
     printf " success!\n"
@@ -32,11 +32,11 @@ else
 fi
 
 printf "\n>>> Removing high energy conformations..."
-$PYTHONDIR/python process_mme.py $resid $a1 $a2 $a3 $a4 > process_mme.out
+$PYTHONDIR/python 02_process_mme.py $resid $a1 $a2 $a3 $a4 > 02_process_mme.out
 if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
     printf " success!\n"
 else
-    printf " failed! Check process_mme.out for errors! \n"
+    printf " failed! Check 02_process_mme.out for errors! \n"
     exit
 fi
 
@@ -44,8 +44,22 @@ printf "\n>>> Generating psi4 inputs..."
 cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
 for i in *psi4.pdb; do
     printf " ${i:2:4}..."
-    $PYTHONDIR/python ../../get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
+    $PYTHONDIR/python ../../03_get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
 done
-printf " Done!\n\n"
+printf " Done!\n"
 
-
+printf "\n>>> Run psi4 now for all inputs one by one? (y/n) : "
+read -t 30 rep
+if [ $rep == 'y' ]; then
+    printf "\n>>> Now running psi4 calculations >>>" 
+    for i in *psi4.inp; do
+	printf "\n    > ${i:0:(-4)} ..."
+	$PSI4DIR/psi4 -i ${i} -o ${i}.dat
+	wait
+	printf " done!"
+    done
+else
+    printf "\n>>> Now exiting...\n"
+    exit
+fi
+exit

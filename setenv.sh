@@ -40,4 +40,16 @@ else
 fi; rm tempi tempo
 echo -e "\n-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-\n"
 
+psi4=`which psi4`
+if [ $psi4 ]; then
+    printf "Found path to psi4 binary PSI4DIR = ${psi4:0:-4}\n"
+    printf "Press ENTER to continue or specify path \n>>> "
+else
+    printf "Enter path to psi4 binary i.e. \${PSI4DIR}/psi4\n>>> "
+fi
+read rep; if [ $rep ]; then psi4=${rep}; else psi4=${psi4:0:-4}; fi
+export PSI4DIR=${psi4}; echo -e "export PSI4DIR=${psi4}" >> setenv
+echo -e "\n-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-\n"
+
+
 exit
