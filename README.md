@@ -5,4 +5,4 @@ Usage: ./run <drude/c36> \<resid\> \<atomname1\> \<atomname2\> \<atomname3\> \<a
 
 e.g. ./run c36 gln CB CG CD NE2
 
-Need psf and crd files named: <resid>.<c36/drude>.psf & <resid>.<c36/drude>.crd
+Need psf and crd files named: \<resid\>.\<c36/drude\>.psf & \<resid\>.\<c36/drude\>.crd
