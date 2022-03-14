@@ -21,7 +21,7 @@ mkdir -p output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
 rerun=1
 if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/psi4_ready ]; then
     printf "\n>>> Psi4 inputs already available! (Press ENTER to continue OR enter any key to re-run)"
-    read rep
+    read -t 10 rep
     if [ $rep ]; then rerun=1; else rerun=0; fi
 fi
 
@@ -61,9 +61,12 @@ else
     cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
 fi
 
-printf "\n>>> Run psi4 now for all inputs one by one? (y/n) : "
-read -t 120 rep
-if [ $rep == 'y' ]; then
+printf "\n>>> Run psi4 now for all inputs one by one? (Press ENTER to continue OR enter any key to exit)"
+read -t 30 rep
+if [ $rep ]; then
+    printf "\n>>> Now exiting...\n"
+    exit
+else
     printf "\n>>> Now running psi4 calculations >>>"
     echo 0 > status
     for i in *psi4.inp; do
@@ -94,13 +97,10 @@ if [ $rep == 'y' ]; then
 	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
 	    printf " done!\n\n"
 	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png\n\n"
-	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png
+	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png > /dev/null 2> /dev/null
 	fi
     fi
     cd $cwd
-else
-    printf "\n>>> Now exiting...\n"
-    exit
 fi
 
 exit

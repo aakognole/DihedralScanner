@@ -15,11 +15,11 @@ for i,j in enumerate(mme[:,0]):
     qme[i,1] = qme[i,1] - qme_min
 
 plt.figure()
-plt.title("resid: %s\ndihe: %s-%s-%s-%s"%(resid.upper(),a1.upper(),a2.upper(),a3.upper(),a4.upper()))
-plt.plot(qme[:,0],qme[:,1], label='qme')
-plt.plot(mme[:,0],mme[:,1], label='mme')
-plt.xlabel('dihedral (deg)')
-plt.ylabel('potential energy (kcal/mol)')
+plt.title("%s : %s-%s-%s-%s"%(resid.upper(),a1.upper(),a2.upper(),a3.upper(),a4.upper()))
+plt.plot(qme[:,0],qme[:,1], label='QM')
+plt.plot(mme[:,0],mme[:,1], label='MM')
+plt.xlabel('Dihedral angle (deg)')
+plt.ylabel('Potential energy (kcal/mol)')
 plt.legend()
 plt.tight_layout()
 plt.savefig("%s_dihe_%s_%s_%s_%s.png"%(resid,a1,a2,a3,a4), dpi=300)
