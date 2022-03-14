@@ -14,3 +14,7 @@ Need psf and crd files named: \<resid\>.\<c36/drude\>.psf & \<resid\>.\<c36/drud
 - CHARMM (https://academiccharmm.org/)
 - Psi4 (https://psicode.org/)
 - Numpy, Matplotlib 
+
+## Example results:
+
+![buta_dihe_c1_c2_c3_c4](https://user-images.githubusercontent.com/15039598/158260384-a8ce3250-008d-4740-a052-90df70c30cce.png)
