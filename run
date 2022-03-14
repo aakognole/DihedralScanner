@@ -5,7 +5,7 @@ if [ -e setenv ]; then source setenv; else ./setenv.sh; source setenv; fi
 
 if [ ! ${1} ] || [ ! ${2} ] || [ ! ${3} ] || [ ! ${4} ] || [ ! ${5} ] || [ ! ${6} ]; then
     printf "\n>>> Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4>\n"
-    printf "\ne.g. ./run drude bglcna o5 c1 c2 c3\n"
+    printf "\ne.g. ./run c36 buta c1 c2 c3 c4\n"
     printf "\nNeeds psf and crd files named: <resid>.<c36/drude>.psf & <resid>.<c36/drude>.crd\n\n"
     exit
 fi
@@ -18,48 +18,89 @@ a3="${5}"
 a4="${6}"
 mkdir -p output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
 
-printf "\n>>> Generating coordinates..."
-
-$CHARMMDIR/charmm -i 01_generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > 01_generate_coordinates.out
-flag=`tail -n 6 01_generate_coordinates.out | head -n 1 | awk '{print $1}'`
-if [ $flag == "ABNORMAL" ]; then
-    printf " failed! Check 01_generate_coordinates.out for errors! \n"
-    exit
-else
-    printf " success!\n"
-    sort -n fort.11 > output/mm_${resid}_dihe_${a1}_${a2}_${a3}_${a4}.txt
-    rm fort.11
+rerun=1
+if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/psi4_ready ]; then
+    printf "\n>>> Psi4 inputs already available! (Press ENTER to continue OR enter any key to re-run)"
+    read rep
+    if [ $rep ]; then rerun=1; else rerun=0; fi
 fi
 
-printf "\n>>> Removing high energy conformations..."
-$PYTHONDIR/python 02_process_mme.py $resid $a1 $a2 $a3 $a4 > 02_process_mme.out
-if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
-    printf " success!\n"
-else
-    printf " failed! Check 02_process_mme.out for errors! \n"
-    exit
-fi
+if [ $rerun == 1 ]; then
+    printf "\n>>> Generating coordinates..."
+    $CHARMMDIR/charmm -i 01_generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > 01_generate_coordinates.out
+    flag=`tail -n 6 01_generate_coordinates.out | head -n 1 | awk '{print $1}'`
+    if [ $flag == "ABNORMAL" ]; then
+        printf " failed! Check 01_generate_coordinates.out for errors! \n"
+        exit
+    else
+        printf " success!\n"
+        sort -n fort.11 > output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/mm_${resid}_dihe_${a1}_${a2}_${a3}_${a4}.txt
+        rm fort.11
+    fi
 
-printf "\n>>> Generating psi4 inputs..."
-cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
-for i in *psi4.pdb; do
-    printf " ${i:2:4}..."
-    $PYTHONDIR/python ../../03_get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
-done
-printf " Done!\n"
+    printf "\n>>> Removing high energy conformations..."
+    $PYTHONDIR/python 02_process_mme.py $resid $a1 $a2 $a3 $a4 > 02_process_mme.out
+    if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
+        printf " success!\n"
+    else
+        printf " failed! Check 02_process_mme.out for errors! \n"
+        exit
+    fi
+
+    printf "\n>>> Generating psi4 inputs...\n   "
+    cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+    count=0
+    for i in *psi4.pdb; do
+        if [ $count != 5 ]; then printf "${i:2:4}... "; count=$((count+1))
+        elif [ $count == 5 ]; then printf "${i:2:4}... \n   "; count=0; fi
+        $PYTHONDIR/python ../../03_get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
+    done
+    printf " Done!\n"
+    echo "Ready to run psi4" > psi4_ready
+else
+    cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+fi
 
 printf "\n>>> Run psi4 now for all inputs one by one? (y/n) : "
-read -t 30 rep
+read -t 120 rep
 if [ $rep == 'y' ]; then
-    printf "\n>>> Now running psi4 calculations >>>" 
+    printf "\n>>> Now running psi4 calculations >>>"
+    echo 0 > status
     for i in *psi4.inp; do
 	printf "\n    > ${i:0:(-4)} ..."
-	$PSI4DIR/psi4 -i ${i} -o ${i}.dat
+	if [ ! -e ${i}.dat ]; then
+	    $PSI4DIR/psi4 -i ${i} -o ${i}.dat > /dev/null 2> /dev/null
+	else
+	    flag=`grep "Final energy is" ${i}.dat | wc -l`
+	    if [ $flag == 0 ]; then
+		$PSI4DIR/psi4 -i ${i} -o ${i}.dat > /dev/null 2> /dev/null
+	    fi
+	fi
 	wait
-	printf " done!"
+	flag=`grep "Final energy is" ${i}.dat | wc -l`
+	if [ $flag == 0 ]; then
+	    echo 1 > status
+	    printf " failed!"
+	elif [ $flag == 1 ]; then
+	    printf " done!"
+	fi
     done
+    if [ `cat status` == 0 ]; then
+	printf "\n\n>>> Now extracting qm energies..."
+	grep "Final energy is" d_*.dat | awk '{split($1,a,"_"); printf "%.2f %f %d\n",a[3],$5*627.5,a[2]}' > ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.qme
+	printf " done!\n"
+	printf "\n>>> Now ploting the mm and qm energies..."
+	$PYTHONDIR/python ../../04_plot_energy.py $resid $a1 $a2 $a3 $a4
+	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
+	    printf " done!\n\n"
+	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png\n\n"
+	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png
+	fi
+    fi
+    cd $cwd
 else
     printf "\n>>> Now exiting...\n"
     exit
 fi
+
 exit
