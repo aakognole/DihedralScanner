@@ -1,0 +1,78 @@
+#!/bin/bash
+
+cwd=`pwd`
+if [ -e setenv ]; then source setenv; else ./setenv.sh; source setenv; fi
+
+if [ ! ${1} ] || [ ! ${2} ] || [ ! ${3} ] || [ ! ${4} ] || [ ! ${5} ] || [ ! ${6} ]; then
+    printf "\n>>> Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4>\n"
+    printf "\ne.g. ./make_gif c36 buta c1 c2 c3 c4\n"
+    printf "\nNeeds psf and crd files named: <resid>.<c36/drude>.psf & <resid>.<c36/drude>.crd\n\n"
+    exit
+fi
+
+resid="${2}"
+a1="${3}"
+a2="${4}"
+a3="${5}"
+a4="${6}"
+
+cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+if [ ! -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
+    printf "\n>>> PES calculations not available! (Press ENTER to run OR enter any key to cancel) : "
+    read -t 10 rep
+    if [ $rep ]; then
+	exit
+    else
+	./run ${1} $resid $a1 $a2 $a3 $a4
+    fi
+else
+    printf "\n>>> Using PyMol to save png files..."
+    pymol=`$PYTHONDIR/python -c "import pymol" > temp 2> temp; wc -l temp | awk '{print $1}'`
+    rm temp
+    if [ $pymol == 0 ]; then
+        $PYTHONDIR/python ../../05_save_pngs.py $a1 $a2 $a3 $a4 > 05_save_pngs.out 2>> 05_save_pngs.out
+	printf " Done!\n"
+    else
+	count=0
+	until [ $pymol == 0 ]; do
+	    printf "\n\n   > PyMol is not available in current PYTHONPATH!!!\n"
+            printf "\n   > Enter PYTHONPATH for PyMol (e.g. /home/user/miniconda3/bin)\n\n   > "
+	    read -t 20 rep
+	    if [ ! $rep ]; then
+		printf "You may install PyMol as: conda install -c conda-forge pymol-open-source \n\n   > "
+		printf "OR edit and run savepng.pymol.py script in your PyMol. \n\n   > "
+	    fi
+	    read rep
+	    printf "\n   >"
+	    pymol=`${rep}/python -c "import pymol" > temp 2> temp; wc -l temp | awk '{print $1}'`
+	    rm temp
+	    if [ $pymol == 0 ]; then
+		${rep}/python ../../05_save_pymol_pngs.py $a1 $a2 $a3 $a4 > 05_save_pymol_pngs.out 2>> 05_save_pngs.out
+		printf " Done!\n"
+	    fi
+	    if [ $count == 3 ]; then printf " Skipping ahead!\n"; pymol=0; fi
+	    count=$((count+1))
+	done
+    fi
+    flag=0
+    for i in *psi4.inp; do
+	if [ ! -e ${i:0:(-4)}.png ]; then flag=1; fi
+    done
+    if [ $flag == 1 ]; then
+	printf "\n   > PNG files not available!!! Check 05_save_pymol_pngs.out for errors!\n"; exit
+    else
+	printf "\n>>> Combining energy plots and pngs..."
+	$PYTHONDIR/python ../../06_create_pngs_for_gif.py $resid $a1 $a2 $a3 $a4 > 06_create_pngs_for_gif.out 2>> 06_create_pngs_for_gif.out
+	printf " Done!\n"
+	printf "\n>>> Merging pngs to create GIF..."
+	$PYTHONDIR/python ../../07_create_gif.py $resid $a1 $a2 $a3 $a4 > 07_create_gif.out 2>> 07_create_gif.out
+	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif ]; then
+	    printf " Done!\n\n"
+	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif\n\n   Cheers!\n"
+	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif > /dev/null 2> /dev/null
+	fi
+
+    fi
+fi
+cd $cwd
+exit

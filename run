@@ -96,11 +96,19 @@ else
 	$PYTHONDIR/python ../../04_plot_energy.py $resid $a1 $a2 $a3 $a4
 	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
 	    printf " done!\n\n"
-	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png\n\n"
+	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png\n"
 	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png > /dev/null 2> /dev/null
 	fi
     fi
     cd $cwd
 fi
 
+printf "\n>>> Want to make GIF (Press ENTER to continue OR enter any key to exit) : "
+read -t 20 rep
+if [ $rep ]; then
+    printf "\n    Okay! to make GIF later just run : ./make_gif ${1} $resid $a1 $a2 $a3 $a4 \n"
+    printf "\n    Now exiting... Cheers!\n\n"
+else
+    ./make_gif ${1} $resid $a1 $a2 $a3 $a4
+fi
 exit
