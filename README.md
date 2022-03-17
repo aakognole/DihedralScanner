@@ -15,8 +15,14 @@ Need psf and crd files named: \<resid\>.\<c36/drude\>.psf & \<resid\>.\<c36/drud
 # What you need to have:
 - CHARMM (https://academiccharmm.org/)
 - Psi4 (https://psicode.org/)
-- Numpy, Matplotlib 
+- Numpy, Matplotlib
+#### Optional
+- PyMol (https://anaconda.org/conda-forge/pymol-open-source)
 
 ## Example results:
 
-![buta_dihe_c1_c2_c3_c4](https://user-images.githubusercontent.com/15039598/158260384-a8ce3250-008d-4740-a052-90df70c30cce.png)
+![buta_dihe_c1_c2_c3_c4](https://user-images.githubusercontent.com/15039598/158908793-9386ab2b-97c3-45b6-915e-5bdcc726374f.png)
+
+#### Optional GIF >>
+
+![buta_dihe_c1_c2_c3_c4](https://user-images.githubusercontent.com/15039598/158908680-056d677b-c9b6-4f3c-9b4b-9c5d7978d96b.gif)
