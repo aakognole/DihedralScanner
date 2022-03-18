@@ -2,8 +2,9 @@ import pymol
 pymol.finish_launching([ 'pymol', '-qc'])
 
 from glob import glob
+from sys import argv
 
-a1, a2, a3, a4 = "C1", "C2", "C3", "C4" #str(argv[1]).upper(), str(argv[2]).upper(), str(argv[3]).upper()
+a1, a2, a3, a4 = str(argv[1]).upper(), str(argv[2]).upper(), str(argv[3]).upper(), str(argv[4]).upper()
 
 pymol.cmd.do("set ray_shadows,0")
 pymol.cmd.do("set orthoscopic, on")

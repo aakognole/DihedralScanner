@@ -27,8 +27,6 @@ for i,j in enumerate(objs[:,0]):
     fig = plt.figure(figsize=(8, 4))
     plt.suptitle("%s : %s-%s-%s-%s = %s"%(resid.upper(),a1.upper(),a2.upper(),a3.upper(),a4.upper(),objs[i,1]))
     plt.subplot(121)
-    plt.xlim((np.min(qme[:,0]),np.max(qme[:,0])))
-    plt.ylim((0,1.1*max(np.max(qme[:,1]),np.max(mme[:,1]))))
     plt.plot(qme[:,0],qme[:,1], label='QM')
     plt.plot(mme[:,0],mme[:,1], label='MM')
     plt.plot(qme[i,0],qme[i,1], 'o', color="xkcd:black")
@@ -39,15 +37,8 @@ for i,j in enumerate(objs[:,0]):
     plt.subplot(122)
     im = plt.imread(pdbs[i][0:-4]+'.png')
     plt.imshow(im, aspect='equal',alpha=1.0,zorder=10)
-    plt.tick_params(
-        axis='both',          # changes apply to the x-axis
-        which='both',      # both major and minor ticks are affected
-        bottom=False,      # ticks along the bottom edge are off
-        top=False,         # ticks along the top edge are off
-        left=False,
-        right=False,
-        labelbottom=False,
-        labelleft=False) # labels along the bottom edge are off
+    plt.tick_params( axis='both', which='both', bottom=False,  top=False, left=False,
+                     right=False, labelbottom=False, labelleft=False)
     plt.tight_layout()
     plt.savefig("for_gif_%s_%s.png"%(objs[i,0],objs[i,1]), dpi=300)
     plt.close()

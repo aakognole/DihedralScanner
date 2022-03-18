@@ -30,7 +30,7 @@ else
     pymol=`$PYTHONDIR/python -c "import pymol" > temp 2> temp; wc -l temp | awk '{print $1}'`
     rm temp
     if [ $pymol == 0 ]; then
-        $PYTHONDIR/python ../../05_save_pngs.py $a1 $a2 $a3 $a4 > 05_save_pngs.out 2>> 05_save_pngs.out
+        $PYTHONDIR/python ../../05_save_pymol_pngs.py $a1 $a2 $a3 $a4 > 05_save_pymol_pngs.out 2>> 05_save_pymol_pngs.out
 	printf " Done!\n"
     else
 	count=0
@@ -38,20 +38,20 @@ else
 	    printf "\n\n   > PyMol is not available in current PYTHONPATH!!!\n"
             printf "\n   > Enter PYTHONPATH for PyMol (e.g. /home/user/miniconda3/bin)\n\n   > "
 	    read -t 20 rep
-	    if [ ! $rep ]; then
+	    if [ $rep ]; then
+	        printf "\n   >"
+		pymol=`${rep}/python -c "import pymol" > temp 2> temp; wc -l temp | awk '{print $1}'`
+		rm temp
+		if [ $pymol == 0 ]; then
+                    ${rep}/python ../../05_save_pymol_pngs.py $a1 $a2 $a3 $a4 > 05_save_pymol_pngs.out 2>> 05_save_pymol_pngs.out
+                    printf " Done!\n"
+		fi
+	    else
 		printf "You may install PyMol as: conda install -c conda-forge pymol-open-source \n\n   > "
-		printf "OR edit and run savepng.pymol.py script in your PyMol. \n\n   > "
+	        printf "OR edit and run savepng.pymol.py script in your PyMol. \n\n   > "
+		if [ $count == 5 ]; then printf " Skipping ahead!\n"; pymol=0; fi
+		count=$((count+1))
 	    fi
-	    read rep
-	    printf "\n   >"
-	    pymol=`${rep}/python -c "import pymol" > temp 2> temp; wc -l temp | awk '{print $1}'`
-	    rm temp
-	    if [ $pymol == 0 ]; then
-		${rep}/python ../../05_save_pymol_pngs.py $a1 $a2 $a3 $a4 > 05_save_pymol_pngs.out 2>> 05_save_pngs.out
-		printf " Done!\n"
-	    fi
-	    if [ $count == 3 ]; then printf " Skipping ahead!\n"; pymol=0; fi
-	    count=$((count+1))
 	done
     fi
     flag=0
@@ -68,7 +68,9 @@ else
 	$PYTHONDIR/python ../../07_create_gif.py $resid $a1 $a2 $a3 $a4 > 07_create_gif.out 2>> 07_create_gif.out
 	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif ]; then
 	    printf " Done!\n\n"
+	    printf "   ===================================================================================\n"
 	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif\n\n   Cheers!\n"
+	    printf "   ===================================================================================\n"
 	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.gif > /dev/null 2> /dev/null
 	fi
 

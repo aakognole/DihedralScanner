@@ -93,11 +93,16 @@ else
 	grep "Final energy is" d_*.dat | awk '{split($1,a,"_"); printf "%.2f %f %d\n",a[3],$5*627.5,a[2]}' > ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.qme
 	printf " done!\n"
 	printf "\n>>> Now ploting the mm and qm energies..."
-	$PYTHONDIR/python ../../04_plot_energy.py $resid $a1 $a2 $a3 $a4
+	$PYTHONDIR/python ../../04_plot_energy.py $resid $a1 $a2 $a3 $a4 > 04_plot_energy.out 2> 04_plot_energy.out
 	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
 	    printf " done!\n\n"
+	    printf "   ===================================================================================\n"
 	    printf "   To view the results open: output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png\n"
+	    printf "   ===================================================================================\n"
 	    xdg-open ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png > /dev/null 2> /dev/null
+	else
+	    printf " failed! Check 04_plot_energy.out for errors!\n\n"
+	    exit
 	fi
     fi
     cd $cwd
