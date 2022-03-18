@@ -26,6 +26,9 @@ if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/psi4_ready ]; then
 fi
 
 if [ $rerun == 1 ]; then
+    cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
+    cp ../../scripts/0* ./
+    cp ../../${resid}.${1}.* ./
     printf "\n>>> Generating coordinates..."
     $CHARMMDIR/charmm -i 01_generate_coordinates.inp method=$1 resid=$resid a1=$a1 a2=$a2 a3=$a3 a4=$a4 > 01_generate_coordinates.out
     flag=`tail -n 6 01_generate_coordinates.out | head -n 1 | awk '{print $1}'`
@@ -34,13 +37,13 @@ if [ $rerun == 1 ]; then
         exit
     else
         printf " success!\n"
-        sort -n fort.11 > output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/mm_${resid}_dihe_${a1}_${a2}_${a3}_${a4}.txt
+        sort -n fort.11 > mm_${resid}_dihe_${a1}_${a2}_${a3}_${a4}.txt
         rm fort.11
     fi
 
     printf "\n>>> Removing high energy conformations..."
     $PYTHONDIR/python 02_process_mme.py $resid $a1 $a2 $a3 $a4 > 02_process_mme.out
-    if [ -e output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}/${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
+    if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.mme ]; then
         printf " success!\n"
     else
         printf " failed! Check 02_process_mme.out for errors! \n"
@@ -48,12 +51,11 @@ if [ $rerun == 1 ]; then
     fi
 
     printf "\n>>> Generating psi4 inputs...\n   "
-    cd output/${resid}_dihe_${a1}_${a2}_${a3}_${a4}
     count=0
     for i in *psi4.pdb; do
         if [ $count != 5 ]; then printf "${i:2:4}... "; count=$((count+1))
         elif [ $count == 5 ]; then printf "${i:2:4}... \n   "; count=0; fi
-        $PYTHONDIR/python ../../03_get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
+        $PYTHONDIR/python 03_get_psi4_input.py $i $a1 $a2 $a3 $a4 > ${i:0:(-4)}.inp
     done
     printf " Done!\n"
     echo "Ready to run psi4" > psi4_ready
@@ -93,7 +95,7 @@ else
 	grep "Final energy is" d_*.dat | awk '{split($1,a,"_"); printf "%.2f %f %d\n",a[3],$5*627.5,a[2]}' > ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.qme
 	printf " done!\n"
 	printf "\n>>> Now ploting the mm and qm energies..."
-	$PYTHONDIR/python ../../04_plot_energy.py $resid $a1 $a2 $a3 $a4 > 04_plot_energy.out 2> 04_plot_energy.out
+	$PYTHONDIR/python 04_plot_energy.py $resid $a1 $a2 $a3 $a4 > 04_plot_energy.out 2> 04_plot_energy.out
 	if [ -e ${resid}_dihe_${a1}_${a2}_${a3}_${a4}.png ]; then
 	    printf " done!\n\n"
 	    printf "   ===================================================================================\n"

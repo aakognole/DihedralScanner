@@ -5,12 +5,12 @@ DIMENS CHSIZE 2000000 MAXRES 2000000
 
 ! Read topology and parameter files
 if @method eq c36 then
-    stream toppar_c36.str
+    stream ../../toppar/toppar_c36.str
     read psf card name @resid.c36.psf
     read coor card name @resid.c36.crd
 endif
 if @method eq drude then
-    stream toppar_drude.str
+    stream ../../toppar/toppar_drude.str
     read psf card name @resid.drude.psf
     read coor card name @resid.drude.crd
 endif
@@ -39,7 +39,7 @@ quick 1 @a1 1 @a2 1 @a3 1 @a4
 write title unit 11
 * ?PHI ?ENER @iter
 
-write coor pdb name ./output/@resid_dihe_@a1_@a2_@a3_@a4/d_@iter.pdb
+write coor pdb name d_@iter.pdb
 
 incr iter by 1
 incr scan by 10.0
@@ -49,12 +49,12 @@ dele atom sele all end
 
 ! Read topology and parameter files
 if @method eq c36 then
-    !stream toppar_c36.str
+    !stream ../../toppar/toppar_c36.str
     read psf card name @resid.c36.psf
     read coor card name @resid.c36.crd
 endif
 if @method eq drude then
-    !stream toppar_drude.str
+    !stream ../../toppar/toppar_drude.str
     read psf card name @resid.drude.psf
     read coor card name @resid.drude.crd
 endif
@@ -83,7 +83,7 @@ quick 1 @a1 1 @a2 1 @a3 1 @a4
 write title unit 11
 * ?PHI ?ENER @iter
 
-write coor pdb name ./output/@resid_dihe_@a1_@a2_@a3_@a4/d_@iter.pdb
+write coor pdb name d_@iter.pdb
 
 incr iter by -1
 incr scan by -10.0
