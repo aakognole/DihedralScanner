@@ -4,8 +4,8 @@ cwd=`pwd`
 if [ -e setenv ]; then source setenv; else ./setenv.sh; source setenv; fi
 
 if [ ! ${1} ] || [ ! ${2} ] || [ ! ${3} ] || [ ! ${4} ] || [ ! ${5} ] || [ ! ${6} ]; then
-    printf "\n>>> Usage: ./run <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4>\n"
-    printf "\ne.g. ./run c36 buta c1 c2 c3 c4\n"
+    printf "\n>>> Usage: ./run_scan <drude/c36> <resid> <atom1> <atom2> <atom3> <atom4>\n"
+    printf "\ne.g. ./run_scan c36 buta c1 c2 c3 c4\n"
     printf "\nNeeds psf and crd files named: <resid>.<c36/drude>.psf & <resid>.<c36/drude>.crd\n\n"
     exit
 fi
